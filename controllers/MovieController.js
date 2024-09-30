@@ -1,5 +1,7 @@
 const Movie = require("../models/Movie");
 const MovieService = require("../services/MovieService");
+const { uploadToS3 } = require('../config/common/s3Upload'); // Import hàm upload từ file s3Upload.js
+
 
 class MovieController {
     getAllMovie = async (req, res) => {
@@ -42,29 +44,46 @@ class MovieController {
             res.status(500).json({ error: 'Server error' });
         }
     }
+
     addMovieWithImage = async (req, res) => {
         try {
-            const file = req.file;
-            console.log(`file: ${file}`);
+            // Upload ảnh lên S3
+            const file = await uploadToS3(req.file); // Gọi hàm uploadToS3 để upload và lấy URL của ảnh
+            
+            console.log(`File uploaded successfully: ${file}`);
+            
+            // Nhận dữ liệu từ body
             const name = req.body.name;
             const duration = req.body.duration;
             const directors = req.body.directors;
-            const urlsImage = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`
             const description = req.body.description;
             const id_category = req.body.id_category;
             const end_date = req.body.end_date;
             const start_date = req.body.start_date;
-            const data = await new MovieService().addMovieWithImage(file, name, duration, directors, urlsImage, description, id_category, end_date, start_date);
+            
+            // Gọi service để thêm phim kèm URL ảnh
+            const data = await new MovieService().addMovieWithImage(
+                file, // URL ảnh đã upload
+                name, 
+                duration, 
+                directors, 
+                description, 
+                id_category, 
+                end_date, 
+                start_date
+            );
+            
             res.json({
                 status: data.status,
                 message: data.message,
                 data: data.data
-            })
+            });
         } catch (error) {
             console.log(error);
             res.status(500).json({ status: 500, message: "Có lỗi xảy ra" });
         }
-    }
+    };
+    
     updateMovieWithImage = async (req, res) => {
         try {
             const { id } = req.params;

@@ -31,50 +31,54 @@ class MovieService {
     }
     addMovieWithImage = async (file, name, duration, directors, urlsImage, description, id_category, end_date, start_date) => {
         try {
+            // Kiểm tra xem file (ảnh) và tên phim có tồn tại không
             if (!file || !name) {
                 return {
                     status: 400,
-                    message: "Không tìm thấy file",
+                    message: "Không tìm thấy file hoặc tên phim",
                     data: []
-                }
+                };
             }
-            // console.log('data: ' + data);
-            // console.log('file: ' + file);
-            if (file) {
-                const newMovie = new Movie({
-                    name: name,
-                    duration: duration,
-                    directors: directors,
-                    image: urlsImage,
-                    description: description,
-                    id_category: id_category,
-                    end_date: end_date,
-                    start_date: start_date
-                });
-                const result = await newMovie.save();
-                if (result) {
-                    return {
-                        status: 200,
-                        message: "Thêm thành công",
-                        data: result
-                    };
-                } else {
-                    return {
-                        status: 400,
-                        message: "Lỗi, thêm không thành công",
-                        data: []
-                    };
-                }
+    
+            // Nếu có file và các thông tin phim
+            const newMovie = new Movie({
+                name: name,
+                duration: duration,
+                directors: directors,
+                image: urlsImage, // Lưu URL ảnh từ S3
+                description: description,
+                id_category: id_category,
+                end_date: end_date,
+                start_date: start_date
+            });
+    
+            // Lưu vào cơ sở dữ liệu MongoDB
+            const result = await newMovie.save();
+    
+            if (result) {
+                return {
+                    status: 200,
+                    message: "Thêm thành công",
+                    data: result
+                };
+            } else {
+                return {
+                    status: 400,
+                    message: "Lỗi, thêm không thành công",
+                    data: []
+                };
             }
+    
         } catch (error) {
             console.error('Error:', error);
             return {
-                status: -1,
-                message: 'Internal server error',
+                status: 500,
+                message: "Lỗi hệ thống",
                 data: null
             };
         }
-    }
+    };
+    
     updateMovieWithImage = async (id, file, name, duration, directors, urlsImage, description, id_category, end_date, start_date) => {
         try {
             const update = await Movie.findById(id)
