@@ -59,10 +59,6 @@ app.use(bodyParser.json());
 //   res.send('Tệp đã được tải lên thành công');
 // });
 //
-app.post('/upload-avatar', upload.single('image'), (req, res) => {
-  const filePath = path.join('/tmp', req.file.filename);
-  res.send(`File uploaded to temporary storage: ${filePath}`);
-});
 database.connect();
 //
 
