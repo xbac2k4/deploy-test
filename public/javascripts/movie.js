@@ -209,7 +209,7 @@ const BtnAdd = () => {
             let html = /*html*/`
                 <div class="dialog-add w-100 h-100">
                     <h2 class="title-dialog text-center">THÊM PHIM</h2>
-                    <form id="form-movie" method="post" enctype="multipart/form-data">
+                    <form id="form-movie" method="post">
                         <div class="form-group">
                             <div class="input-group mb-3">
                                 <label class="input-group-text" for="inputGroupSelect01">Thể loại</label>
@@ -257,50 +257,100 @@ const BtnAdd = () => {
                                 aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
                         </div>
                         <div class="d-flex justify-content-center">
-                            <button class="btn btn-primary mx-5 w-25" type="submit">Lưu</button>
+                            <button id="btn-submit" class="btn btn-primary mx-5 w-25" type="submit">Lưu</button>
                             <button class="btn btn-outline-primary mx-5 w-25" type="button" onclick="closeDialog()">Hủy</button>
                         </div>
                     </form>
                 </div>
             `;
             dialogbody.innerHTML = html;
+            // document.getElementById('btn-submit').addEventListener('click', async function () {
+            //     const file = document.querySelector('#image').files[0];
+            //     let base64Image = '';
+            //     if (file) {
+            //         const reader = new FileReader();
+            //         base64Image = await new Promise((resolve, reject) => {
+            //             reader.onloadend = () => resolve(reader.result);
+            //             reader.onerror = (error) => reject(error);
+            //             reader.readAsDataURL(file);
+            //         });
+            //     }
+            //     const movieData = {
+            //         name: document.getElementById('name-movie').value,
+            //         duration: Number(document.getElementById('duration').value),
+            //         directors: document.getElementById('directors').value,
+            //         description: document.getElementById('description').value,
+            //         id_category: document.getElementById('inputGroupSelect01').value,
+            //         start_date: formatDate(document.getElementById('start-date').value),
+            //         end_date: formatDate(document.getElementById('end-date').value),
+            //         image: base64Image// Hình ảnh dưới dạng chuỗi Base64
+            //     };
+
+            //     console.log('Movie Data:', movieData);
+
+            //     BtnLuu(movieData);
+            // })
             const form = document.getElementById('form-movie');
-            form.addEventListener('submit', function (event) {
+            form.addEventListener('submit', async function (event) {
                 event.preventDefault();
-                const formData = new FormData(form);
-                formatAndSubmitForm(formData);
+                const file = document.querySelector('#image').files[0];
+                let base64Image = '';
+                if (file) {
+                    const reader = new FileReader();
+                    base64Image = await new Promise((resolve, reject) => {
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = (error) => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+                }
+                const movieData = {
+                    name: document.getElementById('name-movie').value,
+                    duration: Number(document.getElementById('duration').value),
+                    directors: document.getElementById('directors').value,
+                    description: document.getElementById('description').value,
+                    id_category: document.getElementById('inputGroupSelect01').value,
+                    start_date: formatDate(document.getElementById('start-date').value),
+                    end_date: formatDate(document.getElementById('end-date').value),
+                    image: base64Image// Hình ảnh dưới dạng chuỗi Base64
+                };
+
+                console.log('Movie Data:', movieData);
+
+                BtnLuu(movieData);
             });
         })
         .catch(error => console.error('Error fetching categories:', error));
 }
+const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+};
+// const formatAndSubmitForm = (formData) => {
 
-const formatAndSubmitForm = (formData) => {
-    const formatDate = (dateStr) => {
-        const date = new Date(dateStr);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
 
-    const startDate = formData.get('start_date');
-    const endDate = formData.get('end_date');
+//     const startDate = formData.get('start_date');
+//     const endDate = formData.get('end_date');
 
-    if (startDate) {
-        formData.set('start_date', formatDate(startDate));
-    }
-    if (endDate) {
-        formData.set('end_date', formatDate(endDate));
-    }
+//     if (startDate) {
+//         formData.set('start_date', formatDate(startDate));
+//     }
+//     if (endDate) {
+//         formData.set('end_date', formatDate(endDate));
+//     }
 
-    BtnLuu(formData);
-}
+// }
 
 const BtnLuu = async (formData) => {
     try {
         const response = await fetch(`http://localhost:3000/api/v1/movie/add-movie-with-image`, {
+            headers: {
+                'Content-Type': 'application/json', // Đặt header Content-Type cho JSON
+            },
             method: "POST",
-            body: formData
+            body: JSON.stringify(formData)
         });
         const result = await response.json();
         console.log(result);

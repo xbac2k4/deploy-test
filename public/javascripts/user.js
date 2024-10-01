@@ -12,9 +12,6 @@ let giam = document.getElementById('ic-giam')
 let numberPage = 1;
 let totalPages;
 
-console.log(dialog);      // Should not be null
-console.log(dialogbody);  // Should not be null
-
 const fetchAPI_Page = (currentPage) => {
     fetch(`${url}/get-user-by-page?page=${currentPage}&limit=5`)
         .then(response => {
@@ -180,7 +177,7 @@ const BtnAdd = () => {
                         </div>
                         <div class="form-group">
                             <span class="title" id="inputGroup-sizing-default">Tên:</span>
-                            <input id="name-movie" type="text" class="form-control" name="username"
+                            <input id="username" type="text" class="form-control" name="username"
                                 aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
                         </div>
                         <div class="form-group">
@@ -190,17 +187,17 @@ const BtnAdd = () => {
                         </div>
                         <div class="form-group">
                             <span class="title" id="inputGroup-sizing-default">Email:</span>
-                            <input id="directors" type="text" class="form-control" name="email"
+                            <input id="email" type="text" class="form-control" name="email"
                                 aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
                         </div>
                         <div class="form-group">
                             <span class="title" id="inputGroup-sizing-default">Password:</span>
-                            <input id="directors" type="text" class="form-control" name="password"
+                            <input id="password" type="text" class="form-control" name="password"
                                 aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
                         </div>
                         <div class="form-group">
                             <span class="title" id="inputGroup-sizing-default">Số điện thoại:</span>
-                            <input id="duration" type="text" class="form-control" name="phoneNumber"
+                            <input id="phoneNumber" type="text" class="form-control" name="phoneNumber"
                                 aria-label="Sizing example input" aria-describedby="inputGroup-sizing-lg">
                         </div>
                         <div class="d-flex justify-content-center">
@@ -212,21 +209,43 @@ const BtnAdd = () => {
             `;
             dialogbody.innerHTML = html;
             const form = document.getElementById('form-movie');
-            form.addEventListener('submit', function (event) {
+            form.addEventListener('submit', async function (event) {
                 event.preventDefault();
-                const formData = new FormData(form);
-                console.log(formData.get('sex'));
+                
+                const file = document.querySelector('#image').files[0];
+                let base64Image = '';
+                if (file) {
+                    const reader = new FileReader();
+                    base64Image = await new Promise((resolve, reject) => {
+                        reader.onloadend = () => resolve(reader.result);
+                        reader.onerror = (error) => reject(error);
+                        reader.readAsDataURL(file);
+                    });
+                }
+                const userData = {
+                    username: document.getElementById('username').value, // Trường username
+                    password: document.getElementById('password').value, // Trường password
+                    email: document.getElementById('email').value,       // Trường email
+                    avatar: base64Image,     // Trường avatar (có thể là đường dẫn hoặc base64)
+                    sex: document.getElementById('inputGroupSelect01').value,    // Trường giới tính
+                    phoneNumber: document.getElementById('phoneNumber').value, // Trường số điện thoại
+                };
+                console.log(userData);
+                
                 // formatAndSubmitForm(formData);
-                BtnLuu(formData)
+                BtnLuu(userData)
             });
             
         
 }
-const BtnLuu = async (formData) => {
+const BtnLuu = async (userData) => {
     try {
         const response = await fetch(`http://localhost:3000/api/v1/user/register`, {
+            headers: {
+                'Content-Type': 'application/json', // Đặt header Content-Type cho JSON
+            },
             method: "POST",
-            body: formData
+            body: JSON.stringify(userData)
         });
         const result = await response.json();
         console.log(result);

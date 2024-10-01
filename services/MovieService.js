@@ -29,32 +29,28 @@ class MovieService {
             console.log(error);
         }
     }
-    addMovieWithImage = async (file, name, duration, directors, urlsImage, description, id_category, end_date, start_date) => {
+    addMovieWithImage = async (name, duration, directors, urlsImage, description, id_category, end_date, start_date) => {
         try {
-            // Kiểm tra xem file (ảnh) và tên phim có tồn tại không
-            if (!file || !name) {
-                return {
-                    status: 400,
-                    message: "Không tìm thấy file hoặc tên phim",
-                    data: []
-                };
-            }
-    
-            // Nếu có file và các thông tin phim
+            // if (!file || !name) {
+            //     return {
+            //         status: 400,
+            //         message: "Không tìm thấy file",
+            //         data: []
+            //     }
+            // }
+            // console.log('data: ' + data);
+            // console.log('file: ' + file);
             const newMovie = new Movie({
                 name: name,
                 duration: duration,
                 directors: directors,
-                image: urlsImage, // Lưu URL ảnh từ S3
+                image: urlsImage,
                 description: description,
                 id_category: id_category,
                 end_date: end_date,
                 start_date: start_date
             });
-    
-            // Lưu vào cơ sở dữ liệu MongoDB
             const result = await newMovie.save();
-    
             if (result) {
                 return {
                     status: 200,
@@ -68,16 +64,15 @@ class MovieService {
                     data: []
                 };
             }
-    
         } catch (error) {
             console.error('Error:', error);
             return {
-                status: 500,
-                message: "Lỗi hệ thống",
+                status: -1,
+                message: 'Internal server error',
                 data: null
             };
         }
-    };
+    }
     
     updateMovieWithImage = async (id, file, name, duration, directors, urlsImage, description, id_category, end_date, start_date) => {
         try {
